@@ -150,6 +150,7 @@
 #define SDB_STR_MICROCODE                82
 #define SDB_STR_FAN_SPEED                83
 #define SDB_STR_SYSTEM_INFO              84
-#define SDB_STR_COUNT 86
+#define SDB_STR_EXIT                     85
+#define SDB_STR_COUNT 87
 
 #endif

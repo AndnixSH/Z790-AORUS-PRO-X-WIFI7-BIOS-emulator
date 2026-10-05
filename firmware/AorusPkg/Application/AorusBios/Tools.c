@@ -172,16 +172,16 @@ QFlashRun (
 
   for ( ; ;) {
     DarkScreen (SdbNamed (SDB_STR_QFLASH_TITLE));
-    GfxDrawImage (DataImage (IMG_GUI (184)), 420, 300);
-    GfxDrawImage (DataImage (IMG_GUI (185)), 850, 380);
-    GfxDrawImage (DataImage (IMG_GUI (186)), 1250, 290);
-    FontDrawCentered (560, 500, L"USB / HDD", RGB (0xC0, 0xC0, 0xC0), FONT_SCALE);
-    FontDrawCentered (1357, 500, gSdb.Info->BiosVersion, RGB (0xC0, 0xC0, 0xC0), FONT_SCALE);
+    GfxDrawImage (DataImage (IMG_GUI (184)), 420, 150);
+    GfxDrawImage (DataImage (IMG_GUI (185)), 850, 230);
+    GfxDrawImage (DataImage (IMG_GUI (186)), 1250, 140);
+    FontDrawCentered (560, 350, L"USB / HDD", RGB (0xC0, 0xC0, 0xC0), FONT_SCALE);
+    FontDrawCentered (1357, 350, gSdb.Info->BiosVersion, RGB (0xC0, 0xC0, 0xC0), FONT_SCALE);
     GfxPresent ();
 
     Items[0] = SdbNamed (SDB_STR_UPDATE_BIOS);
     Items[1] = SdbNamed (SDB_STR_SAVE_BIOS);
-    Items[2] = SdbNamed (SDB_STR_EXIT_NOSAVE);
+    Items[2] = SdbNamed (SDB_STR_EXIT);
     Pick     = DlgMenu (SdbNamed (SDB_STR_QFLASH_TITLE), Items, 3, 0, TRUE);
     if ((Pick < 0) || (Pick == 2)) {
       return;

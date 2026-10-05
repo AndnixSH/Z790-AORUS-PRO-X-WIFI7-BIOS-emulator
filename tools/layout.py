@@ -304,5 +304,5 @@ NAMED_STRINGS = {
     'qflash_title': 'Q-Flash', 'update_bios': 'Update BIOS', 'save_bios': 'Save BIOS',
     'qflash_no_drive': 'No Drive Found',
     'mb': 'MB', 'bios_ver': 'BIOS Ver.', 'ram': 'RAM', 'microcode': 'Microcode',
-    'fan_speed': 'Fan Speed', 'system_info': 'System Information',
+    'fan_speed': 'Fan Speed', 'system_info': 'System Information', 'exit': 'Exit',
 }

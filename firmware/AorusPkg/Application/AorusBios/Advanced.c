@@ -604,7 +604,7 @@ OptionSearch (
   VOID
   )
 {
-  STATIC CHAR16  Query[40];
+  CHAR16         Query[40];
   CONST CHAR16   **Items;
   UINT32         *Where;
   UINTN          Count;
@@ -613,6 +613,7 @@ OptionSearch (
   INTN           Pick;
   SDB_FORM       *Form;
 
+  Query[0] = 0;
   if (!DlgInput (SdbNamed (SDB_STR_OPTION_SEARCH), SdbNamed (SDB_STR_SEARCH_ALTF), Query, 30, FALSE, FALSE) || (Query[0] == 0)) {
     return;
   }
