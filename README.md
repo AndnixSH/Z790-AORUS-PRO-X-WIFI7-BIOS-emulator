@@ -31,7 +31,7 @@ scripts/run.sh        # powers on the board in QEMU
 ## Why not just run the real BIOS in QEMU?
 
 The real image doesn't get past its first few hundred instructions. QEMU
-emulates a generic PC: a 2009 Q35/ICH9 or a 1996 i440FX chipset. AMI Aptio V for
+emulates a generic PC: a 2007 Q35/ICH9 or a 1996 i440FX chipset. AMI Aptio V for
 Raptor Lake expects real Intel silicon. The image was tested on both QEMU
 machine types:
 
