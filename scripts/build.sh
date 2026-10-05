@@ -21,7 +21,7 @@ JOBS="${JOBS:-$(nproc 2>/dev/null || echo 4)}"
 while [ $# -gt 0 ]; do
   case "$1" in
     --bios) BIOS_FILE="$2"; shift 2 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    -h|--help) awk 'NR > 1 && !/^#/ { exit } NR > 1 { sub(/^# ?/, ""); print }' "$0"; exit 0 ;;
     *) echo "unknown option $1" >&2; exit 1 ;;
   esac
 done

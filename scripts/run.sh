@@ -15,7 +15,8 @@
 #   --usb DIR          folder shown as a FAT USB stick (default build/usb);
 #                      F12 screenshots and Q-Flash use it
 #   --fullscreen       start full screen
-#   --headless         no window; QMP socket in build/qmp.sock (for tests)
+#   --headless         no window; QMP socket in build/qmp.sock, or in
+#                      $QMP_SOCK (for tests)
 #   -- ARGS...         extra QEMU arguments
 #
 set -euo pipefail
@@ -43,9 +44,9 @@ while [ $# -gt 0 ]; do
     --cdrom) MEDIA+=(-drive "file=$2,media=cdrom,if=none,id=cd0" -device "ide-cd,drive=cd0"); shift 2 ;;
     --usb) USB_DIR="$2"; shift 2 ;;
     --fullscreen) DISPLAY_ARGS+=(-full-screen); shift ;;
-    --headless) DISPLAY_ARGS=(-display none -qmp "unix:$ROOT/build/qmp.sock,server,nowait"); shift ;;
+    --headless) DISPLAY_ARGS=(-display none -qmp "unix:${QMP_SOCK:-$ROOT/build/qmp.sock},server,nowait"); shift ;;
     --) shift; EXTRA+=("$@"); break ;;
-    -h|--help) sed -n '2,22p' "$0"; exit 0 ;;
+    -h|--help) awk 'NR > 1 && !/^#/ { exit } NR > 1 { sub(/^# ?/, ""); print }' "$0"; exit 0 ;;
     *) echo "unknown option $1 (see --help)" >&2; exit 1 ;;
   esac
 done
@@ -79,6 +80,8 @@ exec qemu-system-x86_64 \
   -machine q35 "${ACCEL[@]}" "${CPU[@]}" -smp 8 -m "$MEM" \
   -drive "if=pflash,format=raw,unit=0,readonly=on,file=$CODE" \
   -drive "if=pflash,format=raw,unit=1,file=$VARS" \
+  -smbios "type=1,manufacturer=Gigabyte Technology Co.,, Ltd.,product=Z790 AORUS PRO X WIFI7,version=-CF,serial=Default string,sku=Default string,family=Z790 MB" \
+  -smbios "type=2,manufacturer=Gigabyte Technology Co.,, Ltd.,product=Z790 AORUS PRO X WIFI7,version=x.x,serial=Default string" \
   -vga std -rtc base=localtime -nic none \
   -device qemu-xhci,id=xhci \
   -drive "if=none,id=usbstick,format=raw,file=fat:rw:$USB_DIR" \

@@ -13,7 +13,7 @@ from PIL import Image
 
 PNG_SIG = b'\x89PNG\r\n\x1a\n'
 
-# Fixed image ids (keep in sync with firmware/AorusPkg/Include/GuiImages.h)
+# Fixed image ids (keep in sync with firmware/AorusPkg/Include/SdbFormat.h)
 IMG_BOOT_LOGO = 1
 IMG_POST_BANNER = 2
 IMG_POST_BANNER_SMALL = 3
