@@ -1,0 +1,71 @@
+## @file
+#  AORUS BIOS emulator front-end (POST screen, boot policy and setup UI).
+#
+#  Uses the FILE_GUID of MdeModulePkg's UiApp so that it replaces the
+#  TianoCore setup application everywhere OVMF refers to it.
+#
+#  SPDX-License-Identifier: MIT
+##
+
+[Defines]
+  INF_VERSION    = 0x00010005
+  BASE_NAME      = AorusBios
+  FILE_GUID      = 462CAA21-7614-4503-836E-8AB6F4662331
+  MODULE_TYPE    = UEFI_APPLICATION
+  VERSION_STRING = 1.0
+  ENTRY_POINT    = AorusBiosMain
+
+[Sources]
+  AorusBios.h
+  Ui.h
+  Main.c
+  Gfx.c
+  Font.c
+  Data.c
+  Settings.c
+  Input.c
+  HwMon.c
+  Boot.c
+  Post.c
+  Dialog.c
+  Ui.c
+  Advanced.c
+  Easy.c
+  Tools.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  AorusPkg/AorusPkg.dec
+
+[LibraryClasses]
+  UefiApplicationEntryPoint
+  UefiLib
+  BaseLib
+  BaseMemoryLib
+  MemoryAllocationLib
+  DebugLib
+  PrintLib
+  PcdLib
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  DxeServicesLib
+  DevicePathLib
+  UefiBootManagerLib
+
+[Guids]
+  gEfiGlobalVariableGuid
+  gEfiFileInfoGuid
+  gAorusSdbFileGuid
+  gAorusGuiFileGuid
+  gAorusFontFileGuid
+  gAorusEmuVariableGuid
+
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid
+  gEfiSimpleTextInputExProtocolGuid
+  gEfiSimpleFileSystemProtocolGuid
+  gEfiLoadedImageProtocolGuid
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdBootManagerMenuFile

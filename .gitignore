@@ -1,0 +1,6 @@
+# Everything generated, including GIGABYTE's BIOS image and the data
+# extracted from it (copyrighted, never committed).
+/build/
+/firmware/AorusPkg/Data/
+__pycache__/
+*.pyc
