@@ -81,7 +81,7 @@ def _ids(names, table):
 _ids(sorted(set(layout.DYNAMIC_TEXT.values()) |
             {e[2] for f in layout.VIRTUAL_FORMS.values() for e in f['entries'] if e[0] == 'text'}),
      DYN_IDS)
-_ids(sorted(set(layout.ACTIONS.values()) | {'smartfan', 'qflash'}), ACTION_IDS)
+_ids(sorted(set(layout.ACTIONS.values()) | {'smartfan', 'qflash', 'boot_override', 'search'}), ACTION_IDS)
 _ids(sorted(set(layout.SPECIAL.values())), SPECIAL_IDS)
 NAMED_IDS = {}
 _ids(list(layout.NAMED_STRINGS), NAMED_IDS)
@@ -201,7 +201,10 @@ class Compiler:
             prof = layout.VOLATILE_PROFILE.get(name)
             if prof:
                 for off, (val, width) in prof.items():
-                    data[off:off + width] = val.to_bytes(width, 'little')
+                    if off == '*':             # fill the whole store
+                        data[:] = bytes([val]) * size
+                    else:
+                        data[off:off + width] = val.to_bytes(width, 'little')
             if key not in self.defaults:
                 flags |= 2                         # volatile: not saved
             vs = dict(id=vid, name=name, guid=guid, size=size, data=bytes(data),
@@ -238,7 +241,11 @@ class Compiler:
             else:
                 out.extend(struct.pack('<BHHB', E_LOAD, q[0], q[1], q[2]))
 
-        for n in ops:
+        # AMI's compiler sometimes sets the scope bit on the first opcode of
+        # an expression, nesting the rest under it; binary order is a
+        # pre-order walk, so flatten before compiling.
+        flat = [x for n in ops for x in n.walk()]
+        for n in flat:
             op = n.op
             if op == hii.OP['EQ_ID_VAL']:
                 load(n.u16(0)); out.extend(struct.pack('<BQ', E_PUSH, n.u16(2))); out.append(E_EQ); depth += 1
@@ -346,6 +353,9 @@ class Compiler:
                 text, oflags, otype = c.u16(0), c.u8(2), c.u8(3)
                 size = {0: 1, 1: 2, 2: 4, 3: 8, 4: 1}.get(otype, 8)
                 val = int.from_bytes(c.body[4:4 + size], 'little')
+                override = layout.OPTION_TEXT.get((self.text_of(s.prompt), val))
+                if override:
+                    text = self.string_id(override)
                 sup = self._or_exprs([e for k, e in conds if k == 'S'])
                 s.options.append((text, oflags, val, sup))
                 if oflags & 0x10 and not s.flags & SF_HAS_DEFAULT:   # EFI_IFR_OPTION_DEFAULT
@@ -458,6 +468,12 @@ class Compiler:
                     s.ref, s.action = resolve_target(e[2])
                     s.flags |= SF_VIRTUAL | (SF_ACTION if s.action else 0)
                     stmts.append(s)
+                elif kind == 'action':
+                    s = Stmt(K_ACTION)
+                    s.prompt = self.named_string(e[1])
+                    s.action = ACTION_IDS[e[2]]
+                    s.flags |= SF_VIRTUAL | SF_ACTION
+                    stmts.append(s)
                 elif kind == 'subtitle':
                     s = Stmt(K_SUBTITLE)
                     s.prompt = self.string_id(e[1])
@@ -505,11 +521,16 @@ class Compiler:
 
     def annotate(self):
         favs = set(layout.DEFAULT_FAVORITES)
+        marked = set()
+        for fid in layout.TWEAKER_SEARCH + [f for f in self.form_order if f not in layout.TWEAKER_SEARCH]:
+            for s in self.forms[fid]['stmts']:
+                p = self.text_of(s.prompt)
+                if p in favs and p not in marked and s.kind in (K_ONEOF, K_NUMERIC, K_CHECKBOX):
+                    s.flags |= SF_FAVORITE_DEFAULT       # one question per item
+                    marked.add(p)
         for f in self.forms.values():
             for s in f['stmts']:
                 p = self.text_of(s.prompt)
-                if p in favs and s.kind in (K_ONEOF, K_NUMERIC, K_CHECKBOX):
-                    s.flags |= SF_FAVORITE_DEFAULT
                 if p.startswith('  '):
                     s.flags |= SF_INDENT
                 if s.kind == K_TEXT and not s.dyn and p in layout.DYNAMIC_TEXT:
@@ -519,14 +540,25 @@ class Compiler:
                     s.flags |= SF_ACTION
         # Save & Exit: AMI implements these entries in AMITSE; they sit behind
         # conditions that only make sense with AMITSE's private variables.
+        override = False
         for s in self.forms[layout.F_EXIT]['stmts']:
+            p = self.text_of(s.prompt)
+            if s.kind == K_SUBTITLE and p == 'Boot Override':
+                override = True
+            elif override and s.kind == K_REF and not p:
+                # AMITSE fills this with one entry per boot device
+                s.action = ACTION_IDS['boot_override']
+                s.flags |= SF_ACTION
+                override = False
             if s.flags & SF_ACTION:
                 s.suppress = []
 
     def specials(self):
         res = []
         for prompt, key in layout.SPECIAL.items():
-            for fid in self.form_order:
+            pref = layout.SPECIAL_FORM.get(prompt)
+            order = ([pref] if pref else []) + [f for f in self.form_order if f != pref]
+            for fid in order:
                 f = self.forms[fid]
                 if f['virtual']:
                     continue

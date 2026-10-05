@@ -347,6 +347,16 @@ SdbSpecial (
   UINT16  Key
   );
 
+SDB_STMT *
+SdbVisibleVariant (
+  SDB_STMT  *S
+  );
+
+SDB_STMT *
+SdbSpecialVisible (
+  UINT16  Key
+  );
+
 UINT64
 SdbSpecialValue (
   UINT16  Key,

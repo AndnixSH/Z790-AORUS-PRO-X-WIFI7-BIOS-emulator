@@ -131,9 +131,9 @@ Layout (
     (VOID)Icons;
   }
 
-  Y = 664;
+  Y = 690;
   for (Index = 0; Index < ARRAY_SIZE (MemKeys); Index++) {
-    S = SdbSpecial (MemKeys[Index]);
+    S = SdbSpecialVisible (MemKeys[Index]);
     if ((S != NULL) && !SdbSuppressed (S)) {
       AddWidget (330, Y, 250, 28, W_STMT, 0, S);
       Y += 40;
@@ -208,14 +208,15 @@ DrawEasy (
   InfoLine (70, 264, SdbNamed (SDB_STR_CPU), gHw.CpuBrand);
   UnicodeSPrint (Buf, sizeof (Buf), L"%dGB", gHw.MemSizeMb / 1024);
   InfoLine (70, 326, SdbNamed (SDB_STR_RAM), Buf);
+  // IA32_BIOS_SIGN_ID: QEMU loads no microcode, so this usually reads 0.
   UnicodeSPrint (Buf, sizeof (Buf), L"%X", (UINT32)RShiftU64 (AsmReadMsr64 (0x8B), 32));
-  InfoLine (70, 360, SdbNamed (SDB_STR_MICROCODE), Buf);
+  InfoLine (70, 360, SdbNamed (SDB_STR_MICROCODE), StrCmp (Buf, L"0") == 0 ? L"N/A" : Buf);
 
   //
   // DRAM status: the emulated memory sits in the A2/B2 slots (the slots
   // GIGABYTE recommends for two DIMMs).
   //
-  PanelBox (50, 456, 520, 190, SdbNamed (SDB_STR_DRAM_STATUS));
+  PanelBox (50, 456, 520, 196, SdbNamed (SDB_STR_DRAM_STATUS));
   PerSlot = gHw.MemSizeMb / 2048;
   for (Index = 0; Index < 4; Index++) {
     STATIC CONST CHAR16  *Slots[] = { L"DDR5_A1", L"DDR5_A2", L"DDR5_B1", L"DDR5_B2" };
@@ -242,7 +243,7 @@ DrawEasy (
     Temps[3] = gHw.VrmTempDeci;
     for (Index = 0; Index < 4; Index++) {
       INT32  Cx = 680 + (INT32)Index * 165;
-      GfxDrawImage (DataImage (IMG_GUI (104)), Cx - 62, 200);
+      GfxDrawImageTinted (DataImage (IMG_GUI (104 + Index % 3)), Cx - 62, 200, RGB (0x70, 0x70, 0x70));
       UnicodeSPrint (Buf, sizeof (Buf), L"%d.%d\x00B0" L"C", Temps[Index] / 10, Temps[Index] % 10);
       FontDrawCentered (Cx, 300, Buf, C_TEXT, 300);
       FontDrawCentered (Cx, 340, Names[Index], C_TEXT_LIGHT, 210);
@@ -281,8 +282,8 @@ DrawEasy (
   //
   // Memory settings
   //
-  PanelBox (50, 620, 1250, 250, L"");
-  FontDraw (54, 618, L"X.M.P.", C_TEXT, 240);
+  PanelBox (50, 662, 1250, 228, L"");
+  FontDraw (54, 660, L"X.M.P.", C_TEXT, 240);
 
   //
   // GIGABYTE PerfDrive / Boot Sequence / memory (right column)
@@ -334,7 +335,7 @@ DrawEasy (
           GfxGradientV (W->R.X - 6, W->R.Y, W->R.W + 12, W->R.H, RGB (0x60, 0x60, 0x60), RGB (0x2C, 0x2C, 0x2C));
         }
 
-        GfxDrawImageTinted (DataImage (IMG_GUI (103)), W->R.X, W->R.Y + 6, Focus ? C_WHITE : RGB (0x40, 0x40, 0x40));
+        GfxDrawImage (DataImage (IMG_GUI (103)), W->R.X, W->R.Y + 4);
         FontDrawWrapped (W->R.X + 52, W->R.Y + 2, gBootEntries[W->Arg].Name, Focus ? C_WHITE : C_TEXT, 210, W->R.W - 60, 22, 2);
         break;
 

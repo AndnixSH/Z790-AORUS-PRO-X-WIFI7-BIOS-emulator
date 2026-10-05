@@ -234,6 +234,39 @@ SdbSpecial (
   return NULL;
 }
 
+//
+// Some questions exist in several variants with different visibility rules
+// (e.g. X.M.P. for XMP, EXPO or mixed kits); return the one that is shown.
+//
+SDB_STMT *
+SdbVisibleVariant (
+  SDB_STMT  *S
+  )
+{
+  UINT32  Index;
+
+  if ((S == NULL) || !SdbSuppressed (S)) {
+    return S;
+  }
+
+  for (Index = 0; Index < gSdb.StmtCount; Index++) {
+    SDB_STMT  *C = &gSdb.Stmts[Index];
+    if ((C->Prompt == S->Prompt) && (C->Kind == S->Kind) && ((C->Flags & SDB_SF_VIRTUAL) == 0) && !SdbSuppressed (C)) {
+      return C;
+    }
+  }
+
+  return S;
+}
+
+SDB_STMT *
+SdbSpecialVisible (
+  UINT16  Key
+  )
+{
+  return SdbVisibleVariant (SdbSpecial (Key));
+}
+
 UINT64
 SdbSpecialValue (
   UINT16  Key,

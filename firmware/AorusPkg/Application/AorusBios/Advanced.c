@@ -23,8 +23,9 @@
 #define SPD_INFO_FORM   0x28F6
 
 #define ROW_STMT      0
-#define ROW_BOOT      1
+#define ROW_BOOT      1             // "Boot Option #n" priority entry
 #define ROW_BLANK     2
+#define ROW_BOOTNOW   3             // "Boot Override" entry: boot it now
 
 typedef struct {
   SDB_STMT    *S;
@@ -88,7 +89,7 @@ AddRow (
   R->Type       = Type;
   R->Boot       = Boot;
   R->Grayed     = (S != NULL) && SdbGrayed (S) && (S->Kind != SDB_K_REF);
-  R->Selectable = (Type == ROW_BOOT) || ((S != NULL) && IsInteractive (S) && !R->Grayed);
+  R->Selectable = (Type == ROW_BOOT) || (Type == ROW_BOOTNOW) || ((S != NULL) && IsInteractive (S) && !R->Grayed);
 }
 
 STATIC
@@ -140,6 +141,22 @@ AddStatement (
 
       break;
 
+    case SDB_K_REF:
+      if (S->Action == SDB_ACT_BOOT_OVERRIDE) {
+        for (Index = 0; Index < gBootEntryCount; Index++) {
+          AddRow (S, ROW_BOOTNOW, (UINT16)Index);
+        }
+
+        return;
+      }
+
+      // links that AMI fills in at runtime (driver forms etc.)
+      if (*SdbStr (S->Prompt) == 0) {
+        return;
+      }
+
+      break;
+
     default:
       break;
   }
@@ -172,7 +189,7 @@ BuildRows (
     for (Index = 0; Index < gEmu.FavCount; Index++) {
       S = SdbStmtByQuestion (gEmu.Favorites[Index]);
       if (S != NULL) {
-        AddStatement (S);
+        AddStatement (SdbVisibleVariant (S));
       }
     }
   }
@@ -303,6 +320,12 @@ DrawRow (
   Fg      = Selected ? C_WHITE : (R->Grayed ? C_TEXT_GRAY : C_TEXT);
   ValueFg = Selected ? C_WHITE : (R->Grayed ? C_TEXT_GRAY : C_TEXT);
   X       = COL_PROMPT + ((S->Flags & SDB_SF_INDENT) ? 16 : 0);
+
+  if (R->Type == ROW_BOOTNOW) {
+    GfxFill (LIST_X + 22, Y + 11, 9, 9, C_ORANGE);
+    FontDrawFit (X, Y + 4, gBootEntries[R->Boot].Name, Fg, 230, LIST_W - 80);
+    return;
+  }
 
   if (R->Type == ROW_BOOT) {
     UnicodeSPrint (Prompt, sizeof (Prompt), L"Boot Option #%d", R->Boot + 1);
@@ -708,11 +731,31 @@ Activate (
     return UI_CONTINUE;
   }
 
+  if (R->Type == ROW_BOOTNOW) {
+    if (Direction == 0) {
+      // Like AMI: boot the device right away; back here if it fails.
+      BootTry (R->Boot);
+      BootRefresh ();
+      BuildRows ();
+      FixSelection ();
+    }
+
+    return UI_CONTINUE;
+  }
+
   if (S == NULL) {
     return UI_CONTINUE;
   }
 
   if ((S->Flags & SDB_SF_ACTION) != 0) {
+    if (S->Action == SDB_ACT_SEARCH) {
+      if (Direction == 0) {
+        OptionSearch ();
+      }
+
+      return UI_CONTINUE;
+    }
+
     return Direction == 0 ? UiRunAction (S->Action) : UI_CONTINUE;
   }
 

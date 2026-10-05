@@ -329,7 +329,14 @@ UiIsSpecial (
   SDB_STMT  *Sp;
 
   Sp = SdbSpecial (Key);
-  return Sp != NULL && S->QuestionId != 0 && Sp->QuestionId == S->QuestionId;
+  if ((Sp == NULL) || (S->QuestionId == 0)) {
+    return FALSE;
+  }
+
+  // The IFR often defines the same setting more than once (different
+  // question ids, same prompt and storage).
+  return Sp->QuestionId == S->QuestionId ||
+         (Sp->Prompt == S->Prompt && Sp->Kind == S->Kind && Sp->VarIndex == S->VarIndex && Sp->VarOffset == S->VarOffset);
 }
 
 BOOLEAN

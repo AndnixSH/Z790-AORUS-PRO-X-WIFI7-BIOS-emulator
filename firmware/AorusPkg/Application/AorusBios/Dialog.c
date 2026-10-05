@@ -21,8 +21,7 @@ DlgBegin (
   )
 {
   *Original = GfxSave ();
-  GfxBlend (0, 0, SCREEN_W, SCREEN_H, C_BLACK, 110);
-  mDlgBase = GfxSave ();
+  mDlgBase  = GfxSave ();
 }
 
 STATIC
@@ -129,7 +128,7 @@ DlgMenu (
     Selected = 0;
   }
 
-  MaxText = FontWidth (Title, FONT_SCALE);
+  MaxText = FontWidth (Title, FONT_SCALE) + 60;     // room for the close cross
   for (Index = 0; Index < Count; Index++) {
     MaxText = MAX (MaxText, FontWidth (Items[Index], FONT_SCALE));
   }
@@ -144,7 +143,6 @@ DlgMenu (
   Top  = 0;
 
   DlgBegin (&Original);
-  InputFlush ();
   Result = DLG_RESULT_CANCEL;
   for ( ; ;) {
     if (Selected < Top) {
@@ -268,7 +266,6 @@ DlgButtons (
   Bw    = 180;
 
   DlgBegin (&Original);
-  InputFlush ();
   Result = DLG_RESULT_CANCEL;
   for ( ; ;) {
     DlgRedrawBase ();
@@ -370,7 +367,6 @@ DlgInput (
 
   Len = StrLen (Buf);
   DlgBegin (&Original);
-  InputFlush ();
   Ok = FALSE;
   for ( ; ;) {
     DlgRedrawBase ();

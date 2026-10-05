@@ -84,6 +84,8 @@ VIRTUAL_FORMS = {
         ('ref', 'IO Ports', 'io_ports'),
         ('ref', 'Miscellaneous', 'misc'),
         ('blank',),
+        ('action', 'Option Search (Hot Key: Alt-F)', 'search'),
+        ('blank',),
         ('ref', 'PC Health Status', F_PC_HEALTH),
         ('ref', 'Smart Fan 6', '@smartfan'),
     ]),
@@ -215,6 +217,11 @@ SPECIAL = {
     'ErP': 'erp',
 }
 
+# Where to look first for SPECIAL prompts that exist on several forms.
+SPECIAL_FORM = {
+    'Fast Boot': F_BIOS,
+}
+
 # Hardware state that the real firmware computes at boot and keeps in
 # volatile variables.  The values describe a desktop Raptor Lake-S system on
 # a Z790 board with an administrator logged in; they decide which menu items
@@ -223,6 +230,19 @@ VOLATILE_PROFILE = {
     'SystemAccess': {0: (0, 1)},                 # 0 = administrator
     'SetupVolatileData': {2: (2, 1),             # platform flavour: desktop
                           3: (1, 1)},            # platform type: traditional
+    # GIGABYTE "M.I.T. attributes": one byte per tuning feature, set when
+    # the installed CPU / DIMMs support it (an unlocked i9 with XMP DDR5).
+    'ProcMitAttrib': {'*': (1, 1)},
+    'MemMitAttrib': {'*': (1, 1)},
+    'HswMitAttrib': {'*': (1, 1)},
+    'AdvMitAttrib': {'*': (1, 1)},
+    'NBPlatformData': {3: (1, 1),                # integrated graphics present
+                       4: (1, 1)},               # ... and enabled
+}
+
+# Option texts that the real firmware fills in at runtime.
+OPTION_TEXT = {
+    ('Intel Default Settings', 3): 'Extreme',
 }
 
 # Strings that only exist inside the GIGABYTE GUI binary (not in the HII

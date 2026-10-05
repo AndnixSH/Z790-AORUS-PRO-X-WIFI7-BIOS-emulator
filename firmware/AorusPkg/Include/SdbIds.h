@@ -25,14 +25,16 @@
 #define SDB_DYN_MODEL                    21
 #define SDB_DYN_COUNT 22
 
-#define SDB_ACT_EXIT_NOSAVE              1
-#define SDB_ACT_LOAD_DEFAULTS            2
-#define SDB_ACT_LOAD_PROFILE             3
-#define SDB_ACT_QFLASH                   4
-#define SDB_ACT_SAVE_EXIT                5
-#define SDB_ACT_SAVE_PROFILE             6
-#define SDB_ACT_SMARTFAN                 7
-#define SDB_ACT_COUNT 8
+#define SDB_ACT_BOOT_OVERRIDE            1
+#define SDB_ACT_EXIT_NOSAVE              2
+#define SDB_ACT_LOAD_DEFAULTS            3
+#define SDB_ACT_LOAD_PROFILE             4
+#define SDB_ACT_QFLASH                   5
+#define SDB_ACT_SAVE_EXIT                6
+#define SDB_ACT_SAVE_PROFILE             7
+#define SDB_ACT_SEARCH                   8
+#define SDB_ACT_SMARTFAN                 9
+#define SDB_ACT_COUNT 10
 
 #define SDB_SPEC_ABOVE4G                  1
 #define SDB_SPEC_ADMIN_PASSWORD           2
